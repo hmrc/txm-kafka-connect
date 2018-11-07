@@ -1,0 +1,5 @@
+leakDetectionExemptions:
+- ruleId: 'ip_addresses'
+  filePaths:
+  - '/dev-setup/docker-compose.yml'
+  - '/dev-setup/kafka-connect-distributed-container.sh'
