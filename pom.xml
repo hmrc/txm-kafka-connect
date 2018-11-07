@@ -6,7 +6,7 @@
 
     <groupId>uk.gov.hmrc</groupId>
     <artifactId>txm-kafka-connect-extensions</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1-SNAPSHOT</version>
 
     <properties>
         <jdk.version>1.8</jdk.version>
@@ -88,7 +88,38 @@
             <url>http://packages.confluent.io/maven/</url>
         </repository>
 
+        <repository>
+            <id>hmrc-snapshots</id>
+            <name>HMRC snapshots</name>
+            <url>https://nexus-dev.tax.service.gov.uk/content/repositories/hmrc-snapshots/</url>
+        </repository>
+
+        <repository>
+            <id>hmrc-releases</id>
+            <name>HMRC releases</name>
+            <url>https://artefacts.tax.service.gov.uk/artifactory/hmrc-releases</url>
+        </repository>
+
+
     </repositories>
 
-    
+    <!-- Repositories to which this project's artifacts will be deployed. -->
+    <distributionManagement>
+        <repository>
+            <uniqueVersion>false</uniqueVersion>
+            <id>hmrc-releases-local</id>
+            <name>HMRC Artifactory</name>
+            <url>https://artefacts.tax.service.gov.uk/artifactory/hmrc-releases-local</url>
+            <layout>default</layout>
+        </repository>
+        <snapshotRepository>
+            <uniqueVersion>false</uniqueVersion>
+            <id>nexus-snapshot</id>
+            <name>HMRC nexus snapshot repo</name>
+            <url>https://nexus-dev.tax.service.gov.uk/content/repositories/hmrc-snapshots/</url>
+            <layout>default</layout>
+        </snapshotRepository>
+    </distributionManagement>
+
+
 </project>
