@@ -3,3 +3,7 @@ leakDetectionExemptions:
   filePaths:
   - '/dev-setup/docker-compose.yml'
   - '/dev-setup/kafka-connect-distributed-container.sh'
+
+-rule id: 'tax_service_gov_uk'
+  filePaths:
+  - '/pom.xml'
