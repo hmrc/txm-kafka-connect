@@ -1,0 +1,4 @@
+FROM confluentinc/cp-kafka-connect:5.0.0
+
+COPY target/txm-kafka-connect-extensions-1.0-SNAPSHOT.jar /usr/share/java/kafka-connect-storage-common
+

@@ -1,0 +1,84 @@
+version: '2'
+services:
+
+  zookeeper:
+      image: confluentinc/cp-zookeeper
+      container_name: txm-zookeeper
+      ports:
+        - "2181:2181"
+      environment:
+        ZOOKEEPER_CLIENT_PORT: 2181
+        ZOOKEEPER_TICK_TIME: 2000
+
+  broker:
+    image: confluentinc/cp-enterprise-kafka:5.0.0
+    container_name: txm-kafka-broker
+    depends_on:
+      - zookeeper
+    ports:
+      - "29092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeper:2181'
+      KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://broker:9092'
+      KAFKA_METRIC_REPORTERS: io.confluent.metrics.reporter.ConfluentMetricsReporter
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      CONFLUENT_METRICS_REPORTER_BOOTSTRAP_SERVERS: broker:9092
+      CONFLUENT_METRICS_REPORTER_ZOOKEEPER_CONNECT: zookeeper:2181
+      CONFLUENT_METRICS_REPORTER_TOPIC_REPLICAS: 1
+      CONFLUENT_METRICS_ENABLE: 'false'
+      CONFLUENT_SUPPORT_CUSTOMER_ID: 'anonymous'
+
+  connect:
+    image: txm-kafka-connect:dev
+    container_name: txm-kafka-connect
+    depends_on:
+      - broker
+    env_file: ~/.aws/cli/cache/docker_env
+    working_dir: /data
+    ports:
+      - "28083:8083"
+    volumes:
+      - .:/data
+    environment:
+      CONNECT_BOOTSTRAP_SERVERS: broker:9092
+      CONNECT_REST_PORT: 8083
+      CONNECT_GROUP_ID: testinggroup
+      CONNECT_CONFIG_STORAGE_TOPIC: txmS3connect-storage
+      CONNECT_OFFSET_STORAGE_TOPIC: txmS3connect-offsets
+      CONNECT_STATUS_STORAGE_TOPIC: txmS3connect-status
+      CONNECT_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_INTERNAL_VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_REST_ADVERTISED_HOST_NAME: txm-kafka-connect
+      CONNECT_PLUGIN_PATH: /usr/share/java
+      CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+
+  control-center:
+    image: confluentinc/cp-enterprise-control-center:5.0.0
+    container_name: txm-control-center
+    depends_on:
+      - broker
+    ports:
+    - "29021:9021"
+    environment:
+      CONTROL_CENTER_ZOOKEEPER_CONNECT: zookeeper:2181
+      CONTROL_CENTER_BOOTSTRAP_SERVERS: broker:9092
+      CONTROL_CENTER_REPLICATION_FACTOR: 1
+      CONTROL_CENTER_CONNECT_CLUSTER: connect:8083
+
+  message-producer:
+    image: txm-kafka-connect-producer
+    container_name: message-producer
+    working_dir: /data
+    command: python3 message_producer.py
+    tty: true
+    depends_on:
+    - connect
+    volumes:
+    - .:/data
+
